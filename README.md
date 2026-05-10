@@ -63,6 +63,26 @@ npm run infra:up
 
 If Docker reports that it cannot connect to `unix:///var/run/docker.sock`, start your Docker daemon/Desktop first or see [`docs/local-infrastructure.md`](docs/local-infrastructure.md).
 
+
+## Realtime pipeline
+
+The runnable pipeline supports:
+
+```text
+Solana JSON-RPC → indexer → Kafka → graph-worker → Neo4j → HTTP API → dashboard
+```
+
+For the full local runbook, environment variables, curl examples, and dashboard workflow, see [`docs/realtime-pipeline.md`](docs/realtime-pipeline.md).
+
+Common commands after `npm run build`:
+
+```bash
+npm run dev:graph-worker
+npm run dev:indexer
+npm run dev:api
+npm run dev:dashboard
+```
+
 ## Core signals
 
 - Funding graph: common funders, fan-out patterns, exchange deposit reuse.

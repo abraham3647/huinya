@@ -26,12 +26,16 @@ export function createGraphNode(params: GraphNode): GraphNode {
   return params;
 }
 
-export function buildWalletTransactionGraph(address: string, transactions: ParsedSolanaTransaction[]): WalletGraph {
+export function buildWalletTransactionGraph(
+  address: string,
+  transactions: ParsedSolanaTransaction[],
+  rootKind: GraphNode['kind'] = 'wallet',
+): WalletGraph {
   const nodes = new Map<string, GraphNode>();
   const edges: GraphEdge[] = [];
   const addWallet = (wallet: string) => {
     if (!nodes.has(wallet)) {
-      nodes.set(wallet, createGraphNode({ id: wallet, label: shortId(wallet), kind: 'wallet' }));
+      nodes.set(wallet, createGraphNode({ id: wallet, label: shortId(wallet), kind: wallet === address ? rootKind : 'wallet' }));
     }
   };
 

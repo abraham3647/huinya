@@ -15,7 +15,10 @@ type GraphEdge = {
   weight: number;
 };
 
+type AnalysisTargetType = 'wallet' | 'token';
+
 type Analysis = {
+  targetType: AnalysisTargetType;
   address: string;
   risk: number;
   reasons: string[];
@@ -27,6 +30,7 @@ type Analysis = {
 const defaultAddress = '11111111111111111111111111111111';
 
 export default function DashboardPage() {
+  const [targetType, setTargetType] = useState<AnalysisTargetType>('wallet');
   const [address, setAddress] = useState(defaultAddress);
   const [limit, setLimit] = useState(5);
   const [analysis, setAnalysis] = useState<Analysis | undefined>();
@@ -38,7 +42,7 @@ export default function DashboardPage() {
     setLoading(true);
     setError(undefined);
     try {
-      const response = await fetch(`/api/analyze?address=${encodeURIComponent(address)}&limit=${limit}`);
+      const response = await fetch(`/api/analyze?type=${targetType}&address=${encodeURIComponent(address)}&limit=${limit}`);
       const payload = await response.json();
       if (!response.ok || payload.error) {
         const details = [payload.error, payload.cause, payload.hint].filter(Boolean).join(' ');
@@ -60,15 +64,24 @@ export default function DashboardPage() {
         <p style={{ color: '#38bdf8', fontWeight: 700, letterSpacing: 1 }}>Bags.fm Anti-Sybil Engine</p>
         <h1 style={{ fontSize: 44, margin: '8px 0' }}>Realtime wallet analysis dashboard</h1>
         <p style={{ color: '#94a3b8', maxWidth: 780 }}>
-          Enter a Solana wallet, fetch recent transactions through the dashboard proxy, score coordinated behavior, and inspect the wallet ↔ transaction graph.
+          Choose wallet mode for a wallet owner address or token mode for a token mint address. Wallet analysis follows wallet transactions; token analysis starts from the mint address and is mint-centric unless a full token-transfer indexer is connected.
           Keep the API running on <code>http://localhost:3001</code> or set <code>API_BASE_URL</code> for the dashboard server.
         </p>
 
-        <form onSubmit={analyze} style={{ display: 'grid', gridTemplateColumns: '1fr 120px 150px', gap: 12, margin: '28px 0' }}>
+        <form onSubmit={analyze} style={{ display: 'grid', gridTemplateColumns: '150px 1fr 120px 150px', gap: 12, margin: '28px 0' }}>
+          <select
+            value={targetType}
+            onChange={(event) => setTargetType(event.target.value as AnalysisTargetType)}
+            style={inputStyle}
+            aria-label="Analysis target type"
+          >
+            <option value="wallet">Wallet</option>
+            <option value="token">Token mint</option>
+          </select>
           <input
             value={address}
             onChange={(event) => setAddress(event.target.value)}
-            placeholder="Solana wallet address"
+            placeholder={targetType === 'wallet' ? 'Solana wallet address' : 'Solana token mint address'}
             style={inputStyle}
           />
           <input
@@ -90,14 +103,14 @@ export default function DashboardPage() {
         ) : null}
 
         <section style={{ display: 'grid', gridTemplateColumns: 'repeat(3, minmax(0, 1fr))', gap: 16 }}>
-          <Metric label="Wallet risk" value={analysis ? `${Math.round(analysis.risk * 100)}%` : '—'} />
+          <Metric label={analysis?.targetType === 'token' ? 'Token risk' : 'Wallet risk'} value={analysis ? `${Math.round(analysis.risk * 100)}%` : '—'} />
           <Metric label="Coordinated probability" value={analysis ? `${Math.round(analysis.cluster.coordinatedProbability * 100)}%` : '—'} />
           <Metric label="Graph size" value={analysis ? `${analysis.graph.nodes.length} nodes / ${analysis.graph.edges.length} edges` : '—'} />
         </section>
 
         <section style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1.4fr) minmax(360px, 0.6fr)', gap: 16, marginTop: 16 }}>
           <article style={cardStyle}>
-            <h2>Wallet ↔ transaction graph</h2>
+            <h2>{analysis?.targetType === 'token' ? 'Token mint ↔ transaction graph' : 'Wallet ↔ transaction graph'}</h2>
             <svg viewBox="0 0 900 520" style={{ width: '100%', height: 520, background: '#020617', borderRadius: 16 }}>
               {(analysis?.graph.edges ?? []).map((edge, index) => {
                 const source = graphLayout.get(edge.source);
@@ -122,7 +135,7 @@ export default function DashboardPage() {
           <aside style={cardStyle}>
             <h2>Explanation</h2>
             <ul>
-              {(analysis?.reasons ?? ['Run analysis to see risk reasons.']).map((reason) => <li key={reason}>{reason}</li>)}
+              {(analysis?.reasons ?? ['Run wallet analysis for wallet owner addresses, or token analysis for token mint addresses.']).map((reason) => <li key={reason}>{reason}</li>)}
             </ul>
             <h3>Recent transactions</h3>
             <div style={{ display: 'grid', gap: 8, maxHeight: 320, overflow: 'auto' }}>

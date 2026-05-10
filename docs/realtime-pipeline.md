@@ -75,6 +75,7 @@ Useful endpoints:
 ```bash
 curl http://localhost:3001/health
 curl 'http://localhost:3001/wallet/<SOLANA_WALLET>/analyze?limit=5'
+curl 'http://localhost:3001/token/<TOKEN_MINT>/analyze?limit=5'
 curl http://localhost:3001/wallet/<SOLANA_WALLET>/risk
 curl http://localhost:3001/cluster/demo-cluster
 ```
@@ -87,7 +88,16 @@ In terminal D:
 API_BASE_URL=http://localhost:3001 NEXT_PUBLIC_API_URL=http://localhost:3001 npm run dev:dashboard
 ```
 
-Open `http://localhost:3000`, paste a wallet address, start with a small limit such as `5`, and run analysis. The dashboard calls its same-origin `/api/analyze` proxy, which forwards to `API_BASE_URL` so browser CORS and `Failed to fetch` errors are converted into actionable JSON messages. The dashboard renders wallet nodes, transaction nodes, graph edges, risk score, cluster probability, explanations, and recent transaction signatures.
+Open `http://localhost:3000`, choose `Wallet` for a wallet owner address or `Token mint` for a token mint address, start with a small limit such as `5`, and run analysis. The dashboard calls its same-origin `/api/analyze` proxy, which forwards to `API_BASE_URL` so browser CORS and `Failed to fetch` errors are converted into actionable JSON messages. The dashboard renders wallet nodes, transaction nodes, graph edges, risk score, cluster probability, explanations, and recent transaction signatures.
+
+## Wallet address vs token mint address
+
+The dashboard has two explicit modes:
+
+- `Wallet`: enter a Solana wallet/owner address. The API calls `/wallet/:address/analyze`, fetches recent signatures for that wallet, builds a wallet ↔ transaction graph, and scores coordinated behavior around that wallet.
+- `Token mint`: enter the SPL token mint address. The API calls `/token/:mint/analyze`, fetches recent signatures involving the mint account, filters parsed transactions that mention that mint, and builds a token mint ↔ transaction graph.
+
+Important limitation: Solana public JSON-RPC is not a full token-holder or DEX trade indexer. Searching by the mint address only sees transactions where the mint account appears in the transaction account list or token balance metadata. For production-grade token analysis, connect the indexer to a token-transfer source such as Helius enhanced transactions/DAS, Triton, Yellowstone gRPC, or your own historical indexer.
 
 ## Dashboard says `Failed to fetch`
 

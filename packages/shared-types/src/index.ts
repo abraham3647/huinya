@@ -54,7 +54,10 @@ export interface WalletAnalysisRequest {
   limit: number;
 }
 
+export type AnalysisTargetType = 'wallet' | 'token';
+
 export interface WalletAnalysisResponse {
+  targetType: AnalysisTargetType;
   address: string;
   risk: number;
   cluster: ClusterRisk;

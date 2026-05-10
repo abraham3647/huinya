@@ -43,7 +43,12 @@ async function route(url: any): Promise<unknown> {
 
   const analyzeMatch = path.match(/^\/wallet\/([^/]+)\/analyze$/);
   if (analyzeMatch) {
-    return analysisService.analyzeWallet(decodeURIComponent(analyzeMatch[1]), Number(url.searchParams.get('limit') ?? 25));
+    return analysisService.analyzeWallet(decodeURIComponent(analyzeMatch[1]), Number(url.searchParams.get('limit') ?? 10));
+  }
+
+  const tokenAnalyzeMatch = path.match(/^\/token\/([^/]+)\/analyze$/);
+  if (tokenAnalyzeMatch) {
+    return analysisService.analyzeToken(decodeURIComponent(tokenAnalyzeMatch[1]), Number(url.searchParams.get('limit') ?? 10));
   }
 
   const walletRiskMatch = path.match(/^\/wallet\/([^/]+)\/risk$/);
@@ -59,7 +64,8 @@ async function route(url: any): Promise<unknown> {
     ok: true,
     endpoints: [
       'GET /health',
-      'GET /wallet/:address/analyze?limit=25',
+      'GET /wallet/:address/analyze?limit=10',
+      'GET /token/:mint/analyze?limit=10',
       'GET /wallet/:address/risk',
       'GET /cluster/:id',
       'GET /creator/:id/integrity',

@@ -3,6 +3,7 @@ const defaultApiBaseUrl = 'http://localhost:3001';
 export async function GET(request: Request): Promise<Response> {
   const url = new URL(request.url);
   const address = url.searchParams.get('address')?.trim();
+  const targetType = url.searchParams.get('type') === 'token' ? 'token' : 'wallet';
   const limit = Number(url.searchParams.get('limit') ?? 5);
   const apiBaseUrl = process.env.API_BASE_URL ?? process.env.NEXT_PUBLIC_API_URL ?? defaultApiBaseUrl;
 
@@ -11,7 +12,8 @@ export async function GET(request: Request): Promise<Response> {
   }
 
   try {
-    const response = await fetch(`${apiBaseUrl}/wallet/${encodeURIComponent(address)}/analyze?limit=${limit}`, {
+    const apiPath = targetType === 'token' ? 'token' : 'wallet';
+    const response = await fetch(`${apiBaseUrl}/${apiPath}/${encodeURIComponent(address)}/analyze?limit=${limit}`, {
       cache: 'no-store',
     });
     const text = await response.text();

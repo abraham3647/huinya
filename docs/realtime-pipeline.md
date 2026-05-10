@@ -12,7 +12,7 @@ Solana JSON-RPC -> indexer -> Kafka topic -> graph-worker -> Neo4j -> HTTP API -
 cp .env.example .env
 ```
 
-Set `SOLANA_RPC_URL` to a Solana RPC endpoint. Public RPC works for smoke tests, but a paid RPC is recommended for repeated analysis because public endpoints are rate limited.
+Set `SOLANA_RPC_URL` to a Solana RPC endpoint. Public RPC works for small smoke tests, but a paid RPC is recommended for repeated analysis because public endpoints are rate limited. The indexer fetches transactions sequentially and retries HTTP 429 responses with exponential backoff; keep `SOLANA_TX_LIMIT` low, for example `5`, when using public RPC.
 
 ## 2. Start Kafka and Neo4j
 
@@ -51,7 +51,7 @@ In terminal B:
 SOLANA_RPC_URL=https://api.mainnet-beta.solana.com \
 KAFKA_BROKERS=localhost:9092 \
 WALLET_ADDRESS=<SOLANA_WALLET> \
-SOLANA_TX_LIMIT=25 \
+SOLANA_TX_LIMIT=5 \
 npm run dev:indexer
 ```
 
@@ -74,7 +74,7 @@ Useful endpoints:
 
 ```bash
 curl http://localhost:3001/health
-curl 'http://localhost:3001/wallet/<SOLANA_WALLET>/analyze?limit=10'
+curl 'http://localhost:3001/wallet/<SOLANA_WALLET>/analyze?limit=5'
 curl http://localhost:3001/wallet/<SOLANA_WALLET>/risk
 curl http://localhost:3001/cluster/demo-cluster
 ```
@@ -87,7 +87,18 @@ In terminal D:
 NEXT_PUBLIC_API_URL=http://localhost:3001 npm run dev:dashboard
 ```
 
-Open `http://localhost:3000`, paste a wallet address, and run analysis. The dashboard renders wallet nodes, transaction nodes, graph edges, risk score, cluster probability, explanations, and recent transaction signatures.
+Open `http://localhost:3000`, paste a wallet address, start with a small limit such as `5`, and run analysis. The dashboard renders wallet nodes, transaction nodes, graph edges, risk score, cluster probability, explanations, and recent transaction signatures.
+
+## RPC rate limits
+
+If you see `HTTP 429`, the Solana RPC provider is throttling requests. Use one or more of these fixes:
+
+- Reduce `SOLANA_TX_LIMIT` or dashboard limit to `5` or lower.
+- Increase `SOLANA_RPC_REQUEST_DELAY_MS` to `500`-`1500`.
+- Increase `SOLANA_RPC_MAX_RETRIES` for slow public RPC endpoints.
+- Prefer a dedicated Helius, Triton, QuickNode, Alchemy, or other paid Solana RPC URL for demos.
+
+The indexer skips individual transactions that still fail after retries, so one throttled `getTransaction` response no longer crashes the whole run.
 
 ## No-Kafka smoke mode
 

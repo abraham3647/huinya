@@ -28,7 +28,7 @@ const defaultAddress = '11111111111111111111111111111111';
 
 export default function DashboardPage() {
   const [address, setAddress] = useState(defaultAddress);
-  const [limit, setLimit] = useState(10);
+  const [limit, setLimit] = useState(5);
   const [analysis, setAnalysis] = useState<Analysis | undefined>();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | undefined>();

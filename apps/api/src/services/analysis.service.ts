@@ -10,11 +10,9 @@ export class AnalysisService {
     private readonly repository: GraphRepository | undefined = createGraphRepository(),
   ) {}
 
-  async analyzeWallet(address: string, limit = 25): Promise<WalletAnalysisResponse> {
+  async analyzeWallet(address: string, limit = 10): Promise<WalletAnalysisResponse> {
     const signatures = await this.rpc.getSignaturesForAddress(address, limit);
-    const transactions = (
-      await Promise.all(signatures.map((item) => this.rpc.getParsedTransaction(item.signature)))
-    ).filter((transaction): transaction is ParsedSolanaTransaction => Boolean(transaction));
+    const transactions = await this.rpc.getParsedTransactions(signatures);
     const graph = buildWalletTransactionGraph(address, transactions);
 
     if (this.repository) {

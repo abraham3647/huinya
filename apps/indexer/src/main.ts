@@ -7,12 +7,10 @@ import { SolanaRpcClient } from './rpc/solana-rpc.js';
 async function main(): Promise<void> {
   const address = process.env.WALLET_ADDRESS ?? '11111111111111111111111111111111';
   const endpoint = process.env.SOLANA_RPC_URL ?? 'https://api.mainnet-beta.solana.com';
-  const limit = Number(process.env.SOLANA_TX_LIMIT ?? 10);
+  const limit = Number(process.env.SOLANA_TX_LIMIT ?? 5);
   const rpc = new SolanaRpcClient({ endpoint });
   const signatures = await rpc.getSignaturesForAddress(address, limit);
-  const transactions = (
-    await Promise.all(signatures.map((item) => rpc.getParsedTransaction(item.signature)))
-  ).filter((transaction): transaction is NonNullable<typeof transaction> => Boolean(transaction));
+  const transactions = await rpc.getParsedTransactions(signatures);
   const edges = transactionsToGraphEdges(address, transactions);
   const producer = process.env.KAFKA_BROKERS
     ? new KafkaEventBus({ clientId: 'anti-sybil-indexer', brokers: process.env.KAFKA_BROKERS.split(',') })

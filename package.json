@@ -1,0 +1,24 @@
+{
+  "name": "anti-sybil-engine",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Anti-Sybil Engine for Bags.fm coordinated wallet cluster detection.",
+  "workspaces": [
+    "apps/api",
+    "apps/indexer",
+    "apps/graph-worker",
+    "apps/dashboard",
+    "packages/shared-types",
+    "packages/scoring",
+    "packages/graph-core"
+  ],
+  "scripts": {
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "build": "tsc -p tsconfig.json",
+    "lint": "tsc -p tsconfig.json --noEmit"
+  },
+  "devDependencies": {
+    "@types/node": "^20.12.12",
+    "typescript": "^5.4.5"
+  }
+}

@@ -1,0 +1,1 @@
+{"name":"@anti-sybil/indexer","version":"0.1.0","private":true,"type":"module","main":"dist/apps/indexer/src/main.js","dependencies":{"@anti-sybil/shared-types":"0.1.0","@anti-sybil/graph-core":"0.1.0"}}

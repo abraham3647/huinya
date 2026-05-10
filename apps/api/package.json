@@ -1,0 +1,1 @@
+{"name":"@anti-sybil/api","version":"0.1.0","private":true,"type":"module","main":"dist/apps/api/src/main.js","dependencies":{"@anti-sybil/shared-types":"0.1.0","@anti-sybil/scoring":"0.1.0"}}

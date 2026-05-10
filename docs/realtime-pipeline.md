@@ -95,7 +95,9 @@ Open `http://localhost:3000`, choose `Wallet` for a wallet owner address or `Tok
 The dashboard has two explicit modes:
 
 - `Wallet`: enter a Solana wallet/owner address. The API calls `/wallet/:address/analyze`, fetches recent signatures for that wallet, builds a wallet ↔ transaction graph, and scores coordinated behavior around that wallet.
-- `Token mint`: enter the SPL token mint address. The API calls `/token/:mint/analyze`, fetches recent signatures involving the mint account, filters parsed transactions that mention that mint, and builds a token mint ↔ transaction graph.
+- `Token mint`: enter the SPL token mint address. The API calls `/token/:mint/analyze`, fetches recent signatures involving the mint account, filters parsed transactions that mention that mint, and builds a token mint involvement graph. An edge from the token mint to a transaction means `mint_mentioned`; it is not a transfer from the token to a wallet.
+
+A token mint is not an actor and cannot sign/send transactions. In the dashboard, token-mode lines are relationship edges: `token -> tx` means the mint appeared in that transaction, `fee_payer -> tx` means a wallet paid for the transaction, and `tx -> wallet` means the wallet/account participated.
 
 Important limitation: Solana public JSON-RPC is not a full token-holder or DEX trade indexer. Searching by the mint address only sees transactions where the mint account appears in the transaction account list or token balance metadata. For production-grade token analysis, connect the indexer to a token-transfer source such as Helius enhanced transactions/DAS, Triton, Yellowstone gRPC, or your own historical indexer.
 

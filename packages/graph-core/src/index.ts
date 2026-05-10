@@ -82,6 +82,68 @@ export function buildWalletTransactionGraph(
   return { nodes: [...nodes.values()], edges };
 }
 
+export function buildTokenTransactionGraph(mint: string, transactions: ParsedSolanaTransaction[]): WalletGraph {
+  const nodes = new Map<string, GraphNode>();
+  const edges: GraphEdge[] = [];
+  nodes.set(mint, createGraphNode({ id: mint, label: shortId(mint), kind: 'token' }));
+
+  const addWallet = (wallet: string) => {
+    if (!nodes.has(wallet)) {
+      nodes.set(wallet, createGraphNode({ id: wallet, label: shortId(wallet), kind: 'wallet' }));
+    }
+  };
+
+  for (const transaction of transactions) {
+    const txNodeId = `tx:${transaction.signature}`;
+    nodes.set(
+      txNodeId,
+      createGraphNode({
+        id: txNodeId,
+        label: shortId(transaction.signature),
+        kind: 'transaction',
+        metadata: { signature: transaction.signature, slot: transaction.slot, feePayer: transaction.feePayer },
+      }),
+    );
+
+    edges.push(
+      createGraphEdge({
+        source: mint,
+        target: txNodeId,
+        signal: 'transaction',
+        observedAt: transaction.blockTime ? new Date(transaction.blockTime * 1000) : undefined,
+        metadata: { signature: transaction.signature, relation: 'mint_mentioned' },
+      }),
+    );
+
+    addWallet(transaction.feePayer);
+    edges.push(
+      createGraphEdge({
+        source: transaction.feePayer,
+        target: txNodeId,
+        signal: 'transaction',
+        weight: Math.max(1, Math.abs(transaction.nativeBalanceDeltaLamports)),
+        observedAt: transaction.blockTime ? new Date(transaction.blockTime * 1000) : undefined,
+        metadata: { signature: transaction.signature, relation: 'fee_payer' },
+      }),
+    );
+
+    for (const account of transaction.accounts.filter((account) => account !== mint).slice(0, 12)) {
+      addWallet(account);
+      edges.push(
+        createGraphEdge({
+          source: txNodeId,
+          target: account,
+          signal: 'transaction',
+          observedAt: transaction.blockTime ? new Date(transaction.blockTime * 1000) : undefined,
+          metadata: { signature: transaction.signature, relation: 'participant' },
+        }),
+      );
+    }
+  }
+
+  return { nodes: [...nodes.values()], edges };
+}
+
 function shortId(value: string): string {
   return value.length <= 12 ? value : `${value.slice(0, 4)}…${value.slice(-4)}`;
 }

@@ -1,4 +1,4 @@
-import { buildWalletTransactionGraph } from '../../../../packages/graph-core/src/index.js';
+import { buildTokenTransactionGraph, buildWalletTransactionGraph } from '../../../../packages/graph-core/src/index.js';
 import { aggregateClusterRisk, scoreWalletActivity } from '../../../../packages/scoring/src/index.js';
 import type { ParsedSolanaTransaction, WalletActivity, WalletAnalysisResponse } from '../../../../packages/shared-types/src/index.js';
 import { Neo4jGraphRepository, type GraphRepository } from '../../../graph-worker/src/neo4j/client.js';
@@ -34,7 +34,7 @@ export class AnalysisService {
       clusterId: `token:${mint}`,
       rootKind: 'token',
       fallbackReason:
-        'token mint-centric graph analyzed from Solana RPC; for full holder/trade coverage use an indexed token-transfer provider',
+        'token mint-centric graph analyzed from Solana RPC; edges mean mint involvement, not transfers sent by the token',
     });
   }
 
@@ -51,7 +51,9 @@ export class AnalysisService {
     rootKind: 'wallet' | 'token';
     fallbackReason: string;
   }): Promise<WalletAnalysisResponse> {
-    const graph = buildWalletTransactionGraph(params.address, params.transactions, params.rootKind);
+    const graph = params.targetType === 'token'
+      ? buildTokenTransactionGraph(params.address, params.transactions)
+      : buildWalletTransactionGraph(params.address, params.transactions, params.rootKind);
 
     if (this.repository) {
       await Promise.all(graph.edges.map((edge) => this.repository?.upsertEdge(edge)));

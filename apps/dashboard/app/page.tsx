@@ -13,6 +13,7 @@ type GraphEdge = {
   target: string;
   signal: string;
   weight: number;
+  metadata?: Record<string, string | number | boolean>;
 };
 
 type AnalysisTargetType = 'wallet' | 'token';
@@ -110,18 +111,32 @@ export default function DashboardPage() {
 
         <section style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1.4fr) minmax(360px, 0.6fr)', gap: 16, marginTop: 16 }}>
           <article style={cardStyle}>
-            <h2>{analysis?.targetType === 'token' ? 'Token mint ↔ transaction graph' : 'Wallet ↔ transaction graph'}</h2>
+            <h2>{analysis?.targetType === 'token' ? 'Token mint involvement graph' : 'Wallet ↔ transaction graph'}</h2>
+            <p style={{ color: '#94a3b8', marginTop: -8 }}>
+              {analysis?.targetType === 'token'
+                ? 'A token mint does not send transactions. Lines show that the mint/account participated in or was mentioned by a transaction; wallets are transaction participants or fee payers.'
+                : 'Lines show transaction participation relationships, not necessarily direct value transfers.'}
+            </p>
             <svg viewBox="0 0 900 520" style={{ width: '100%', height: 520, background: '#020617', borderRadius: 16 }}>
               {(analysis?.graph.edges ?? []).map((edge, index) => {
                 const source = graphLayout.get(edge.source);
                 const target = graphLayout.get(edge.target);
                 if (!source || !target) return null;
-                return <line key={`${edge.source}-${edge.target}-${index}`} x1={source.x} y1={source.y} x2={target.x} y2={target.y} stroke="#334155" strokeWidth="1.5" />;
+                return (
+                  <g key={`${edge.source}-${edge.target}-${index}`}>
+                    <line x1={source.x} y1={source.y} x2={target.x} y2={target.y} stroke="#334155" strokeWidth="1.5" />
+                    {edge.metadata?.relation ? (
+                      <text x={(source.x + target.x) / 2} y={(source.y + target.y) / 2} fill="#64748b" fontSize="10">
+                        {String(edge.metadata.relation)}
+                      </text>
+                    ) : null}
+                  </g>
+                );
               })}
               {(analysis?.graph.nodes ?? []).map((node) => {
                 const point = graphLayout.get(node.id);
                 if (!point) return null;
-                const fill = node.kind === 'transaction' ? '#38bdf8' : '#a78bfa';
+                const fill = node.kind === 'transaction' ? '#38bdf8' : node.kind === 'token' ? '#f59e0b' : '#a78bfa';
                 return (
                   <g key={node.id}>
                     <circle cx={point.x} cy={point.y} r={node.kind === 'transaction' ? 9 : 13} fill={fill} />
@@ -134,6 +149,11 @@ export default function DashboardPage() {
 
           <aside style={cardStyle}>
             <h2>Explanation</h2>
+            {analysis?.targetType === 'token' ? (
+              <p style={{ color: '#cbd5e1' }}>
+                Token-mode graph is an involvement graph: <strong>token → tx</strong> means the mint was mentioned by the transaction, not that the token transferred itself to a wallet.
+              </p>
+            ) : null}
             <ul>
               {(analysis?.reasons ?? ['Run wallet analysis for wallet owner addresses, or token analysis for token mint addresses.']).map((reason) => <li key={reason}>{reason}</li>)}
             </ul>

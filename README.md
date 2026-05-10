@@ -57,8 +57,11 @@ python -m compileall apps/ml-engine/src
 Start local infrastructure:
 
 ```bash
-docker compose -f infrastructure/docker/docker-compose.yml up -d
+npm run infra:check
+npm run infra:up
 ```
+
+If Docker reports that it cannot connect to `unix:///var/run/docker.sock`, start your Docker daemon/Desktop first or see [`docs/local-infrastructure.md`](docs/local-infrastructure.md).
 
 ## Core signals
 

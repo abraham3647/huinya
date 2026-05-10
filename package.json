@@ -15,7 +15,10 @@
   "scripts": {
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "build": "tsc -p tsconfig.json",
-    "lint": "tsc -p tsconfig.json --noEmit"
+    "lint": "tsc -p tsconfig.json --noEmit",
+    "infra:check": "./scripts/check-docker.sh",
+    "infra:up": "./scripts/check-docker.sh && docker compose -f infrastructure/docker/docker-compose.yml up -d",
+    "infra:down": "docker compose -f infrastructure/docker/docker-compose.yml down"
   },
   "devDependencies": {
     "@types/node": "^20.12.12",

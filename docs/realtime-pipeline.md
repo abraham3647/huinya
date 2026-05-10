@@ -84,10 +84,27 @@ curl http://localhost:3001/cluster/demo-cluster
 In terminal D:
 
 ```bash
-NEXT_PUBLIC_API_URL=http://localhost:3001 npm run dev:dashboard
+API_BASE_URL=http://localhost:3001 NEXT_PUBLIC_API_URL=http://localhost:3001 npm run dev:dashboard
 ```
 
-Open `http://localhost:3000`, paste a wallet address, start with a small limit such as `5`, and run analysis. The dashboard renders wallet nodes, transaction nodes, graph edges, risk score, cluster probability, explanations, and recent transaction signatures.
+Open `http://localhost:3000`, paste a wallet address, start with a small limit such as `5`, and run analysis. The dashboard calls its same-origin `/api/analyze` proxy, which forwards to `API_BASE_URL` so browser CORS and `Failed to fetch` errors are converted into actionable JSON messages. The dashboard renders wallet nodes, transaction nodes, graph edges, risk score, cluster probability, explanations, and recent transaction signatures.
+
+## Dashboard says `Failed to fetch`
+
+The dashboard needs the backend API to be reachable from the Next.js server. Start the API first:
+
+```bash
+npm run build
+PORT=3001 npm run dev:api
+```
+
+Then start the dashboard with an explicit API URL:
+
+```bash
+API_BASE_URL=http://localhost:3001 NEXT_PUBLIC_API_URL=http://localhost:3001 npm run dev:dashboard
+```
+
+The browser no longer calls the API directly. It calls `/api/analyze` on the dashboard, and that proxy calls the backend. If the backend is down or on a different port, the dashboard shows a clear hint instead of a generic browser `Failed to fetch`.
 
 ## RPC rate limits
 

@@ -72,7 +72,7 @@ The runnable pipeline supports:
 Solana JSON-RPC → indexer → Kafka → graph-worker → Neo4j → HTTP API → dashboard
 ```
 
-For the full local runbook, environment variables, curl examples, dashboard workflow, and Solana RPC `HTTP 429` rate-limit tuning, see [`docs/realtime-pipeline.md`](docs/realtime-pipeline.md).
+For the full local runbook, environment variables, curl examples, dashboard workflow, dashboard `Failed to fetch` troubleshooting, and Solana RPC `HTTP 429` rate-limit tuning, see [`docs/realtime-pipeline.md`](docs/realtime-pipeline.md).
 
 Common commands after `npm run build`:
 

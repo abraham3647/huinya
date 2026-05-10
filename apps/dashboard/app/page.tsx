@@ -32,16 +32,18 @@ export default function DashboardPage() {
   const [analysis, setAnalysis] = useState<Analysis | undefined>();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | undefined>();
-  const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3001';
 
   async function analyze(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setLoading(true);
     setError(undefined);
     try {
-      const response = await fetch(`${apiBaseUrl}/wallet/${encodeURIComponent(address)}/analyze?limit=${limit}`);
+      const response = await fetch(`/api/analyze?address=${encodeURIComponent(address)}&limit=${limit}`);
       const payload = await response.json();
-      if (!response.ok || payload.error) throw new Error(payload.error ?? `HTTP ${response.status}`);
+      if (!response.ok || payload.error) {
+        const details = [payload.error, payload.cause, payload.hint].filter(Boolean).join(' ');
+        throw new Error(details || `HTTP ${response.status}`);
+      }
       setAnalysis(payload);
     } catch (caught) {
       setError(caught instanceof Error ? caught.message : 'Unknown error');
@@ -58,7 +60,8 @@ export default function DashboardPage() {
         <p style={{ color: '#38bdf8', fontWeight: 700, letterSpacing: 1 }}>Bags.fm Anti-Sybil Engine</p>
         <h1 style={{ fontSize: 44, margin: '8px 0' }}>Realtime wallet analysis dashboard</h1>
         <p style={{ color: '#94a3b8', maxWidth: 780 }}>
-          Enter a Solana wallet, fetch recent transactions from the API, score coordinated behavior, and inspect the wallet ↔ transaction graph.
+          Enter a Solana wallet, fetch recent transactions through the dashboard proxy, score coordinated behavior, and inspect the wallet ↔ transaction graph.
+          Keep the API running on <code>http://localhost:3001</code> or set <code>API_BASE_URL</code> for the dashboard server.
         </p>
 
         <form onSubmit={analyze} style={{ display: 'grid', gridTemplateColumns: '1fr 120px 150px', gap: 12, margin: '28px 0' }}>
@@ -79,7 +82,12 @@ export default function DashboardPage() {
           <button disabled={loading} style={buttonStyle}>{loading ? 'Analyzing…' : 'Analyze'}</button>
         </form>
 
-        {error ? <div style={{ ...cardStyle, borderColor: '#ef4444', color: '#fecaca' }}>{error}</div> : null}
+        {error ? (
+          <div style={{ ...cardStyle, borderColor: '#ef4444', color: '#fecaca', marginBottom: 16 }}>
+            <strong>Analysis request failed.</strong>
+            <div style={{ marginTop: 8 }}>{error}</div>
+          </div>
+        ) : null}
 
         <section style={{ display: 'grid', gridTemplateColumns: 'repeat(3, minmax(0, 1fr))', gap: 16 }}>
           <Metric label="Wallet risk" value={analysis ? `${Math.round(analysis.risk * 100)}%` : '—'} />

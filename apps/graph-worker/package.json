@@ -1,0 +1,1 @@
+{"name":"@anti-sybil/graph-worker","version":"0.1.0","private":true,"type":"module","main":"dist/apps/graph-worker/src/main.js","dependencies":{"@anti-sybil/shared-types":"0.1.0","@anti-sybil/graph-core":"0.1.0"}}

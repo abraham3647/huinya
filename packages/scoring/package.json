@@ -1,0 +1,1 @@
+{"name":"@anti-sybil/scoring","version":"0.1.0","private":true,"type":"module","main":"dist/packages/scoring/src/index.js","types":"dist/packages/scoring/src/index.d.ts","dependencies":{"@anti-sybil/shared-types":"0.1.0"}}

@@ -1,0 +1,36 @@
+{
+  "name": "anti-sybil-engine",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Anti-Sybil Engine for Bags.fm coordinated wallet cluster detection.",
+  "workspaces": [
+    "apps/api",
+    "apps/indexer",
+    "apps/graph-worker",
+    "apps/dashboard",
+    "packages/shared-types",
+    "packages/scoring",
+    "packages/graph-core"
+  ],
+  "scripts": {
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "build": "tsc -p tsconfig.json",
+    "lint": "tsc -p tsconfig.json --noEmit",
+    "infra:check": "./scripts/check-docker.sh",
+    "infra:up": "./scripts/check-docker.sh && docker compose -f infrastructure/docker/docker-compose.yml up -d",
+    "infra:down": "docker compose -f infrastructure/docker/docker-compose.yml down",
+    "dev:api": "node dist/apps/api/src/main.js",
+    "dev:indexer": "node dist/apps/indexer/src/main.js",
+    "dev:graph-worker": "node dist/apps/graph-worker/src/main.js",
+    "dev:dashboard": "npm --workspace @anti-sybil/dashboard run dev"
+  },
+  "devDependencies": {
+    "@types/node": "^20.12.12",
+    "typescript": "^5.4.5"
+  },
+  "type": "module",
+  "dependencies": {
+    "kafkajs": "^2.2.4",
+    "neo4j-driver": "^5.20.0"
+  }
+}
